@@ -13,18 +13,12 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-  # session 配置
-#  session:
-#    # 开启分布式 session（须先配置 Redis）
-#    store-type: redis
-#    # 30 天过期
-#    timeout: 2592000
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yuapi
+    url: jdbc:mysql://localhost:3306/#
     username: root
-    password: 13426955289
+    password: #
   # Redis 配置
   redis:
     database: 1
@@ -34,8 +28,8 @@ spring:
   rabbitmq:
     host: 127.0.0.1
     port: 5672
-    username: guest
-    password: guest
+    username: #
+    password: #
     virtualHost: /
     #确认消息已发送到交换机(Exchange)
     publisher-confirm-type: correlated
@@ -54,8 +48,8 @@ server:
     session:
       cookie:
         max-age: 2592000
-        #cookie作用域(我应该不用修改成这个，localhost即可，因为我对外暴露的是网关服务)
-#        domain: 123.207.3.145
+        #cookie作用域
+#        domain: #
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
@@ -66,10 +60,6 @@ mybatis-plus:
       logic-delete-value: 0 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 1 # 逻辑未删除值（默认为 0）
 
-#czq:
-#  api:
-#    access-key: czq
-#    secret-key: abcdefg
 
 dubbo:
   application:
