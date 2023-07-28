@@ -1,0 +1,3 @@
+#Dubbo cache
+#Fri Jul 28 12:25:33 CST 2023
+com.czq.apicommon.service.ApiBackendService=["dubbo","yuapi-backend"]

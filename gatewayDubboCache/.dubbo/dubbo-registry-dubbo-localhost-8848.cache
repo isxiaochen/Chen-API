@@ -1,0 +1,3 @@
+#Dubbo Registry Cache
+#Fri Jul 28 22:30:38 CST 2023
+com.czq.apicommon.service.ApiBackendService=dubbo\://192.168.43.163\:20880/com.czq.apicommon.service.ApiBackendService?anyhost\=true&application\=dubbo&background\=false&category\=providers&deprecated\=false&dubbo\=2.0.2&dynamic\=true&generic\=false&interface\=com.czq.apicommon.service.ApiBackendService&methods\=recoverInterfaceStock,invokeCount,getInterFaceInfo,updateUserInterfaceInvokeCount,getLeftInvokeCount,updateInterfaceStock,getInterfaceById,getInvokeUser,getInterfaceStockById&path\=com.czq.apicommon.service.ApiBackendService&pid\=11152&protocol\=dubbo&release\=3.0.9&service-name-mapping\=true&side\=provider&timestamp\=1690554637359

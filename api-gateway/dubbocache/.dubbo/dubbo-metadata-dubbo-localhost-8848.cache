@@ -1,0 +1,3 @@
+#Dubbo metadataReport Cache
+#Sun Jul 23 21:49:13 CST 2023
+com.czq.apicommon.service.ApiBackendService\:\:\:consumer\:dubbo={"interface"\:"com.czq.apicommon.service.ApiBackendService","dubbo"\:"2.0.2","application"\:"dubbo","pid"\:"25748","side"\:"consumer","release"\:"3.0.9","register.ip"\:"172.18.86.131","methods"\:"invokeCount,getInterFaceInfo,getLeftInvokeCount,getInvokeUser","background"\:"false","qos.port"\:"33333","sticky"\:"false","qos.accept.foreign.ip"\:"false","revision"\:"0.0.1","timestamp"\:"1690120152588"}

@@ -1,0 +1,29 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api/interface/
+
+spring:
+  application:
+    name: api-interface
+  #注册中心和配置中心的配置
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://123.207.3.145:3306/panda_api
+    username: xiaochen
+    password: '@xiaochen!.'
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+czq:
+  api:
+    access-key: czq
+    secret-key: abcdefg

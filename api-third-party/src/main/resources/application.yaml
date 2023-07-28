@@ -1,0 +1,41 @@
+server:
+  port: 9000
+  servlet:
+    context-path: /api/third
+
+spring:
+  application:
+    name: api-third-party
+    cloud:
+      nacos:
+        discovery:
+          server-addr: 127.0.0.1:8848
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/api-third-party
+    username: root
+    password: 13426955289
+  redis:
+    database: 1
+    host: localhost
+    port: 6379
+    timeout: 5000
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    virtualHost: /
+    listener:
+      simple:
+        concurrency: 1
+        max-concurrency: 3
+        # 消费者预取1条数据到内存，默认为250条
+        prefetch: 1
+        # 确定机制
+        acknowledge-mode: manual
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
