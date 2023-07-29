@@ -17,7 +17,7 @@ spring:
     gateway:
       routes:
         - id: api_route
-          uri: lb://yuapi-backend
+          uri: lb://api-backend
           predicates:
             - Path=/api/**
   redis:
