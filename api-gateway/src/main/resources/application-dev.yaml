@@ -6,7 +6,7 @@ server:
       cookie:
         max-age: 2592000
         #cookie作用域
-#        domain: 123.207.3.145
+#        domain: #
 spring:
   application:
     name: api-gateway
