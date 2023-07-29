@@ -36,7 +36,7 @@ Chen API 平台统一抽取接口调用的SDK，动态适配和调用所有接�
 
 ## 系统架构
 
-![API系统架构图](D:\idea\typora目录\项目记录image\API开放平台image\API系统架构图.png)
+
 
 
 
