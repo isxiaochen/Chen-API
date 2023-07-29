@@ -12,7 +12,7 @@ public class RestfulRequest extends RequestStrategy{
 
         String json = JSONUtil.toJsonStr(restfulObj);
         return HttpRequest.post(url)
-                .addHeaders(getHeadMap(paramMap.toString()))
+                .addHeaders(getHeadMap(paramMap!=null? paramMap.toString():""))
                 .body(json)
                 .execute();
     }

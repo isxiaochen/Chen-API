@@ -179,7 +179,9 @@ public class InterfaceInfoController {
             userInterfaceInfoQueryWrapper.eq("userId",userId);
             userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
             UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
-            interfaceInfoVO.setAvailablePieces(userInterfaceInfo.getLeftNum().toString());
+            if (userInterfaceInfo!=null){
+                interfaceInfoVO.setAvailablePieces(userInterfaceInfo.getLeftNum().toString());
+            }
         }
         return ResultUtils.success(interfaceInfoVO);
 
@@ -263,7 +265,7 @@ public class InterfaceInfoController {
         String method = oldInterfaceInfo.getMethod();
         String requestHeader = oldInterfaceInfo.getRequestHeader();
         String requestParams= null;
-        if (requestHeader.contains("application/json")){
+        if (StringUtils.isNotBlank(requestHeader) && requestHeader.contains("application/json")){
             method = RESTFUL_INTERFACE;
             requestParams = oldInterfaceInfo.getRequestParams();
         }
@@ -352,7 +354,7 @@ public class InterfaceInfoController {
         String method = oldInterfaceInfo.getMethod();
         String requestHeader = oldInterfaceInfo.getRequestHeader();
 
-        if (requestHeader.contains("application/json")){
+        if (StringUtils.isNotBlank(requestHeader) && requestHeader.contains("application/json")){
             method = RESTFUL_INTERFACE;
         }
         HeartApiClient tempClient = new HeartApiClient(accessKey,secretKey);

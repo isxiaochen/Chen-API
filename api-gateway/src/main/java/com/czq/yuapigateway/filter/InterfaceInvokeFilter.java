@@ -92,7 +92,7 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
         try {
             invokeUser = apiBackendService.getInvokeUser(accessKey);
         } catch (Exception e) {
-            log.info("远程调用获取调用接口用户的信息失败");
+            log.error("远程调用获取调用接口用户的信息失败");
             e.printStackTrace();
         }
 
@@ -104,6 +104,7 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
         String serverSign = SignUtils.generateSign(body, secretKey);
 
         if (sign == null || !sign.equals(serverSign)){
+            log.error("签名校验失败!!!!");
             return handleNoAuth(response);
         }
 
@@ -112,6 +113,7 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
 
         Boolean success = stringRedisTemplate.opsForValue().setIfAbsent(nonce, "1", 5, TimeUnit.MINUTES);
         if (success ==null){
+            log.error("随机数存储失败!!!!");
             return handleNoAuth(response);
         }
 

@@ -13,7 +13,7 @@ public class PostStrategy extends RequestStrategy{
     public HttpResponse handleRequest(String url, Map<String, Object> paramMap, Object restfulObj) {
         return HttpRequest.post(url)
                 .form(paramMap)
-                .addHeaders(getHeadMap(paramMap.toString()))
+                .addHeaders(getHeadMap(paramMap!=null? paramMap.toString():""))
                 .execute();
     }
 }

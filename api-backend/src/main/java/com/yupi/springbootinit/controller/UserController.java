@@ -1,6 +1,8 @@
 package com.yupi.springbootinit.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.yupi.springbootinit.annotation.AuthCheck;
 import com.yupi.springbootinit.common.BaseResponse;
 import com.yupi.springbootinit.common.DeleteRequest;
@@ -21,6 +23,7 @@ import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -212,23 +215,60 @@ public class UserController {
         return ResultUtils.success(userService.getUserVO(user));
     }
 
+//    /**
+//     * 分页获取用户列表（仅管理员）
+//     *
+//     * @param userQueryRequest
+//     * @param request
+//     * @return
+//     */
+//    @PostMapping("/list/page")
+//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+//    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
+//            HttpServletRequest request) {
+//        long current = userQueryRequest.getCurrent();
+//        long size = userQueryRequest.getPageSize();
+//        Page<User> userPage = userService.page(new Page<>(current, size),
+//                userService.getQueryWrapper(userQueryRequest));
+//        return ResultUtils.success(userPage);
+//    }
+
     /**
-     * 分页获取用户列表（仅管理员）
+     * 分页获取用户列表
      *
      * @param userQueryRequest
      * @param request
      * @return
      */
-    @PostMapping("/list/page")
+    @GetMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
-        long current = userQueryRequest.getCurrent();
-        long size = userQueryRequest.getPageSize();
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest));
-        return ResultUtils.success(userPage);
+    public BaseResponse<Page<UserVO>> listUserByPage(UserQueryRequest userQueryRequest, HttpServletRequest request) {
+        long current = 1;
+        long size = 10;
+        User userQuery = new User();
+        if (userQueryRequest != null) {
+            BeanUtils.copyProperties(userQueryRequest, userQuery);
+            userQuery.setPhone(null);
+            current = userQueryRequest.getCurrent();
+            size = userQueryRequest.getPageSize();
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>(userQuery);
+
+        queryWrapper.like(userQueryRequest != null && StringUtils.isNotBlank(userQueryRequest.getPhoneNum()), "phone", userQueryRequest.getPhoneNum());
+        queryWrapper.ge(StringUtils.isNotBlank(userQueryRequest.getCreateTime()), "createTime", userQueryRequest.getCreateTime());
+        queryWrapper.ge(StringUtils.isNotBlank( userQueryRequest.getUpdateTime()), "phoneNum", userQueryRequest.getUpdateTime());
+
+        Page<User> userPage = userService.page(new Page<>(current, size), queryWrapper);
+        Page<UserVO> userVOPage = new PageDTO<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
+        List<UserVO> userVOList = userPage.getRecords().stream().map(user -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(user, userVO);
+            return userVO;
+        }).collect(Collectors.toList());
+        userVOPage.setRecords(userVOList);
+        return ResultUtils.success(userVOPage);
     }
+
 
     /**
      * 分页获取用户封装列表
