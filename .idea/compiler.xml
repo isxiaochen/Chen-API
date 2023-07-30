@@ -8,10 +8,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-common" />
-        <module name="api-third-party" />
-        <module name="api-interface" />
         <module name="api-client-sdk" />
+        <module name="api-interface" />
         <module name="api-order" />
+        <module name="api-third-party" />
         <module name="Chen-Api" />
         <module name="api-backend" />
         <module name="api-gateway" />

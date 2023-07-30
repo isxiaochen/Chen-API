@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/name")
 public class NameController {
 
-    @GetMapping("/get")
+    @GetMapping("name/get")
     public String getName(String name,HttpServletRequest request){
         return "你的名字是"+name;
     }
