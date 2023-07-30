@@ -16,13 +16,6 @@
 
 ## 项目展示
 
-- 登录
-
-![登录](https://github.com/c-z-q/Chen-Api/blob/master/image/登录.png)
-
-- 注册
-
-![注册](https://github.com/c-z-q/Chen-Api/blob/master/image/注册.png)
 
 - 首页
 
