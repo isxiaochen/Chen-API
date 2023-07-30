@@ -9,3 +9,8 @@
 
 /apiOrderDubboCache/**
 /gatewayDubboCache/**
+
+
+
+#忽略yml
+../api-backend/src/resources/**.yml
