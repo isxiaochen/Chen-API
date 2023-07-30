@@ -14,9 +14,9 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://123.207.3.145:3306/panda_api
-    username: xiaochen
-    password: '@xiaochen!.'
+    url: jdbc:mysql://123.207.3.145:3306/#
+    username: #
+    password: #
 
 mybatis-plus:
   configuration:

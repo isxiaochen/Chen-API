@@ -1,12 +1,14 @@
-## 项目简介
+# Chen API
 
-一个丰富的API开放调用平台，为开发者提供便捷、实用，安全的API调用体验
+> 一个丰富的API开放调用平台，为开发者提供便捷、实用，安全的API调用体验
+>
+> Java + React 全栈项目，包括网站前台+后台，感谢[程序猿鱼皮](https://github.com/liyupi)提供的项目基础框架，我也是在此基础上作拓展
+>
+> 
+>
+> 在线体验地址：[主页 - Panda-API](http://123.207.3.145/)
 
-Java + React 全栈项目，包括网站前台+后台，感谢[程序猿鱼皮](https://github.com/liyupi)提供的项目基础框架，我也是在此基础上作拓展
 
-
-
-在线体验地址：[主页 - Panda-API](http://123.207.3.145/)
 
 
 
@@ -14,7 +16,50 @@ Java + React 全栈项目，包括网站前台+后台，感谢[程序猿鱼皮](
 
 ## 项目展示
 
-待定
+- 登录
+
+![登录](https://github.com/c-z-q/Chen-Api/blob/master/image/登录.png)
+
+- 注册
+
+![注册](https://github.com/c-z-q/Chen-Api/blob/master/image/注册.png)
+
+- 首页
+
+![首页](https://github.com/c-z-q/Chen-Api/blob/master/image/首页.png)
+
+- 接口详情
+
+  ![接口详情](https://github.com/c-z-q/Chen-Api/blob/master/image/接口详情.png)
+
+  
+
+- 接口购买
+
+![购买接口](https://github.com/c-z-q/Chen-Api/blob/master/image/购买接口.png)
+
+- 接口支付
+
+![支付接口](https://github.com/c-z-q/Chen-Api/blob/master/image/支付接口.png)
+
+- 接口管理
+
+![接口管理](https://github.com/c-z-q/Chen-Api/blob/master/image/接口管理.png)
+
+- 接口分析
+
+![接口分析](https://github.com/c-z-q/Chen-Api/blob/master/image/接口分析.png)
+
+- 用户管理
+
+![用户管理](https://github.com/c-z-q/Chen-Api/blob/master/image/用户管理.png)
+
+- 个人中心
+
+![个人中心](https://github.com/c-z-q/Chen-Api/blob/master/image/个人中心.png)
+
+
+
 
 
 
@@ -28,15 +73,15 @@ Java + React 全栈项目，包括网站前台+后台，感谢[程序猿鱼皮](
 
 
 
-Chen API 平台统一抽取接口调用的SDK，动态适配和调用所有接口，给客户提供简单，方便，快捷的接口调用体验，并且使用API签名校验保障接口调用的安全性
+**Chen API 平台统一抽取接口调用的SDK，动态适配和调用所有接口，给客户提供简单，方便，快捷的接口调用体验，并且使用API签名校验保障接口调用的安全性**
 
 
 
 
 
 ## 系统架构
+![系统架构图](https://github.com/c-z-q/Chen-Api/blob/master/image/API%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
 
-![API系统架构图](D:\idea\typora目录\项目记录image\API开放平台image\API系统架构图.png)
 
 
 
