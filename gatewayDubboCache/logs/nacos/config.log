@@ -931,3 +931,5 @@
 2023-07-31 16:58:19.797 INFO [restartedMain:c.a.n.c.c.i.ClientWorker] [fixed-localhost_8848] [subscribe] org.apache.dubbo.metadata.MetadataService:1.0.0:dubbo.configurators+dubbo
 2023-07-31 16:58:19.797 INFO [restartedMain:c.a.n.c.c.i.CacheData] [fixed-localhost_8848] [add-listener] ok, tenant=, dataId=org.apache.dubbo.metadata.MetadataService:1.0.0:dubbo.configurators, group=dubbo, cnt=1
 2023-07-31 16:58:19.813 INFO [com.alibaba.nacos.client.remote.worker:c.a.n.c.c.i.ClientWorker] [817571d2-60a8-4af7-8361-24e36b5295ba_config-0] Connected,notify listen context...
+2023-07-31 17:43:31.216 INFO [DubboShutdownHook:c.a.n.c.a.r.i.CredentialWatcher] [null] CredentialWatcher is stopped
+2023-07-31 17:43:31.216 INFO [DubboShutdownHook:c.a.n.c.a.r.i.CredentialService] [null] CredentialService is freed

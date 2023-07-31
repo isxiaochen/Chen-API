@@ -2649,3 +2649,14 @@
 2023-07-31 17:28:00.515 INFO [nacos-grpc-client-executor-127.0.0.1-387:c.a.n.c.r.client] [0503d902-0d14-4f1f-b7e3-e57aacb865c2] Ack server push request, request = NotifySubscriberRequest, requestId = 817
 2023-07-31 17:28:00.515 INFO [nacos-grpc-client-executor-localhost-416:c.a.n.c.r.client] [dc1a5494-5e37-44c8-9945-d7af17621ca9] Ack server push request, request = NotifySubscriberRequest, requestId = 815
 2023-07-31 17:28:00.530 INFO [nacos-grpc-client-executor-localhost-377:c.a.n.c.r.client] [fa2575f9-27cb-4497-a25e-0fcf184b3755] Ack server push request, request = NotifySubscriberRequest, requestId = 820
+2023-07-31 17:43:31.195 INFO [DubboShutdownHook:c.a.n.c.r.client] Shutdown rpc client, set status to shutdown
+2023-07-31 17:43:31.195 INFO [DubboShutdownHook:c.a.n.c.r.client] Shutdown client event executor java.util.concurrent.ScheduledThreadPoolExecutor@6dbb00da[Running, pool size = 2, active threads = 2, queued tasks = 0, completed tasks = 0]
+2023-07-31 17:43:31.195 INFO [DubboShutdownHook:c.a.n.c.r.client] Close current connection 1690793899549_127.0.0.1_53038
+2023-07-31 17:43:31.198 INFO [nacos-grpc-client-executor-localhost-564:c.a.n.c.r.c.g.GrpcClient] [1690793899549_127.0.0.1_53038]Ignore complete event,isRunning:false,isAbandon=false
+2023-07-31 17:43:31.216 INFO [DubboShutdownHook:c.a.n.c.r.c.g.GrpcClient] Shutdown grpc executor java.util.concurrent.ThreadPoolExecutor@11922a3d[Running, pool size = 3, active threads = 0, queued tasks = 0, completed tasks = 565]
+2023-07-31 17:43:31.227 INFO [SpringApplicationShutdownHook:c.a.n.c.r.client] Shutdown rpc client, set status to shutdown
+2023-07-31 17:43:31.228 INFO [SpringApplicationShutdownHook:c.a.n.c.r.client] Shutdown client event executor java.util.concurrent.ScheduledThreadPoolExecutor@5700ab6e[Running, pool size = 2, active threads = 2, queued tasks = 0, completed tasks = 0]
+2023-07-31 17:43:31.228 INFO [SpringApplicationShutdownHook:c.a.n.c.r.client] Close current connection 1690793898940_127.0.0.1_52933
+2023-07-31 17:43:31.228 INFO [SpringApplicationShutdownHook:c.a.n.c.r.c.g.GrpcClient] Shutdown grpc executor java.util.concurrent.ThreadPoolExecutor@267b9c3e[Running, pool size = 3, active threads = 0, queued tasks = 0, completed tasks = 577]
+2023-07-31 17:43:31.494 INFO [nacos-grpc-client-executor-localhost-621:c.a.n.c.r.client] [dc1a5494-5e37-44c8-9945-d7af17621ca9] Receive server push request, request = NotifySubscriberRequest, requestId = 823
+2023-07-31 17:43:31.494 INFO [nacos-grpc-client-executor-localhost-621:c.a.n.c.r.client] [dc1a5494-5e37-44c8-9945-d7af17621ca9] Ack server push request, request = NotifySubscriberRequest, requestId = 823
