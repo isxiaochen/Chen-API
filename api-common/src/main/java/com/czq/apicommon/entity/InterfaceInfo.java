@@ -60,6 +60,16 @@ public class InterfaceInfo implements Serializable {
     private Byte status;
 
     /**
+     * 接口对应的sdk
+     */
+    private String sdk;
+
+    /**
+     * 请求参数示例
+     */
+    private String parameterExample;
+
+    /**
      * 逻辑删除 0 删除，1正常
      */
     @TableLogic
