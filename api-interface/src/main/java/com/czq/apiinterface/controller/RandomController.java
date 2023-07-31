@@ -5,6 +5,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.czq.apiinterface.entity.ImageResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,7 +13,7 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/random")
-public class RandomWordController {
+public class RandomController {
 
     @GetMapping("/word")
     public String getRandomWork(){
@@ -21,8 +22,8 @@ public class RandomWordController {
         return response.body();
     }
 
-    @GetMapping("/image")
-    public String getRandomImage(){
+    @PostMapping("/image")
+    public String getRandomImageUrl(){
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("format","json");
         HttpResponse response = HttpRequest.post("https://tenapi.cn/v2/acg")

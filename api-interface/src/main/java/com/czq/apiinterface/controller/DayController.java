@@ -12,8 +12,8 @@ import java.util.HashMap;
 @RequestMapping("/day")
 public class DayController {
 
-    @GetMapping("/wallpaper")
-    public String dayWallpaper(){
+    @PostMapping("/wallpaper")
+    public String getDayWallpaperUrl(){
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("format","json");
         HttpResponse response = HttpRequest.post("https://tenapi.cn/v2/bing")

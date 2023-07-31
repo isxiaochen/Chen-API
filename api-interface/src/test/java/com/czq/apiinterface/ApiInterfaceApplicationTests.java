@@ -1,7 +1,6 @@
 package com.czq.apiinterface;
 
-import com.czq.apiclientsdk.client.HeartApiClient;
-import com.czq.apiclientsdk.model.User;
+import com.czq.apiclientsdk.client.NameApiClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -11,7 +10,7 @@ import javax.annotation.Resource;
 class ApiInterfaceApplicationTests {
 
     @Resource
-    private HeartApiClient heartApiClient;
+    private NameApiClient heartApiClient;
 
     @Test
     void contextLoads() {
