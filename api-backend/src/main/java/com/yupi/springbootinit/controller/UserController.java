@@ -19,6 +19,7 @@ import com.yupi.springbootinit.model.dto.user.UserUpdateMyRequest;
 import com.yupi.springbootinit.model.dto.user.UserUpdateRequest;
 import com.czq.apicommon.entity.User;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
+import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
 import java.util.List;
@@ -67,6 +68,7 @@ public class UserController {
         String checkPassword = userRegisterRequest.getCheckPassword();
         String phone = userRegisterRequest.getPhone();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword,phone)) {
+            log.error("请求参数为空!!!!");
             return null;
         }
 
@@ -215,23 +217,6 @@ public class UserController {
         return ResultUtils.success(userService.getUserVO(user));
     }
 
-//    /**
-//     * 分页获取用户列表（仅管理员）
-//     *
-//     * @param userQueryRequest
-//     * @param request
-//     * @return
-//     */
-//    @PostMapping("/list/page")
-//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-//    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
-//            HttpServletRequest request) {
-//        long current = userQueryRequest.getCurrent();
-//        long size = userQueryRequest.getPageSize();
-//        Page<User> userPage = userService.page(new Page<>(current, size),
-//                userService.getQueryWrapper(userQueryRequest));
-//        return ResultUtils.success(userPage);
-//    }
 
     /**
      * 分页获取用户列表
@@ -295,7 +280,16 @@ public class UserController {
         return ResultUtils.success(userVOPage);
     }
 
-    // endregion
+    /**
+     * 获取图形验证码
+     *
+     * @param request
+     * @param response
+     */
+    @GetMapping("/getCaptcha")
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
+        userService.getCaptcha(request, response);
+    }
 
     /**
      * 更新个人信息
@@ -332,4 +326,32 @@ public class UserController {
         userService.sendCode(phone);
         return ResultUtils.success(true);
     }
+
+    @GetMapping("/key")
+    public BaseResponse<UserDevKeyVO> getKey(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", loginUser.getId());
+        queryWrapper.eq("userAccount", loginUser.getUserAccount());
+        queryWrapper.select("accessKey", "secretKey");
+        User user = userService.getOne(queryWrapper);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        UserDevKeyVO userDevKeyVO = new UserDevKeyVO();
+        userDevKeyVO.setSecretKey(user.getSecretKey());
+        userDevKeyVO.setAccessKey(user.getAccessKey());
+        return ResultUtils.success(userDevKeyVO);
+    }
+
+    @PostMapping("/gen/key")
+    public BaseResponse<UserDevKeyVO> genKey(HttpServletRequest request) {
+        UserDevKeyVO userDevKeyVO = userService.genkey(request);
+        return ResultUtils.success(userDevKeyVO);
+    }
+
+
 }

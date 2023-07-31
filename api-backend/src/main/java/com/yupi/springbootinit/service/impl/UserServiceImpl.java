@@ -6,9 +6,13 @@ import static com.czq.apicommon.constant.RabbitmqConstant.ROUTINGKEY_SMS;
 import static com.yupi.springbootinit.constant.UserConstant.USER_LOGIN_STATE;
 import static com.yupi.springbootinit.utils.LeakyBucket.leakyBucket;
 
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.LineCaptcha;
+import cn.hutool.captcha.generator.RandomGenerator;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.czq.apicommon.common.JwtUtils;
@@ -16,15 +20,19 @@ import com.czq.apicommon.entity.SmsMessage;
 import com.google.gson.Gson;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.constant.CommonConstant;
+import com.yupi.springbootinit.constant.UserConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.mapper.UserMapper;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.czq.apicommon.entity.User;
 import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
+import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
 import com.yupi.springbootinit.utils.SqlUtils;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,13 +63,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 盐值，混淆密码
      */
-    private static final String SALT = "yupi";
+    private static final String SALT = "chen";
 
     @Resource
     private RabbitTemplate rabbitTemplate;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 图片验证码 redis 前缀
+     */
+    private static final String CAPTCHA_PREFIX = "api:captchaId:";
 
 
 
@@ -180,7 +193,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
-
         return user;
     }
 
@@ -216,6 +228,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 Long userId = JwtUtils.getUserIdByToken(request);
                 stringRedisTemplate.delete(USER_LOGIN_STATE+userId);
                 Cookie timeOutCookie = new Cookie(cookie.getName(),cookie.getValue());
+                timeOutCookie.setMaxAge(0);
                 response.addCookie(timeOutCookie);
                 return true;
             }
@@ -308,5 +321,65 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         }
 
+    }
+
+    @Override
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
+        //前端必须传一个 signature 来作为唯一标识
+        String signature = request.getHeader("signature");
+        if (StringUtils.isEmpty(signature)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        try {
+            // 自定义纯数字的验证码（随机4位数字，可重复）
+            RandomGenerator randomGenerator = new RandomGenerator("0123456789", 4);
+            LineCaptcha lineCaptcha = CaptchaUtil.createLineCaptcha(100, 30);
+            lineCaptcha.setGenerator(randomGenerator);
+            //设置响应头
+            response.setContentType("image/jpeg");
+            response.setHeader("Pragma", "No-cache");
+            // 输出到页面
+            lineCaptcha.write(response.getOutputStream());
+            // 打印日志
+            log.info("captchaId：{} ----生成的验证码:{}", signature, lineCaptcha.getCode());
+            // 将验证码设置到Redis中,2分钟过期
+            stringRedisTemplate.opsForValue().set(CAPTCHA_PREFIX + signature, lineCaptcha.getCode(), 2, TimeUnit.MINUTES);
+            // 关闭流
+            response.getOutputStream().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public UserDevKeyVO genkey(HttpServletRequest request) {
+        User loginUser = getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
+        UserDevKeyVO userDevKeyVO = genKey(loginUser.getUserAccount());
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("userAccount",loginUser.getUserAccount());
+        updateWrapper.eq("id",loginUser.getId());
+        updateWrapper.set("accessKey",userDevKeyVO.getAccessKey());
+        updateWrapper.set("secretKey",userDevKeyVO.getSecretKey());
+        this.update(updateWrapper);
+        loginUser.setAccessKey(userDevKeyVO.getAccessKey());
+        loginUser.setSecretKey(userDevKeyVO.getSecretKey());
+
+        //重置登录用户的ak,sk信息
+        String userJson = gson.toJson(loginUser);
+        stringRedisTemplate.opsForValue().set(USER_LOGIN_STATE+loginUser.getId(),userJson,JwtUtils.EXPIRE, TimeUnit.MILLISECONDS);
+        return userDevKeyVO;
+    }
+
+    private UserDevKeyVO genKey(String userAccount){
+        String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(5));
+        String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(8));
+        UserDevKeyVO userDevKeyVO = new UserDevKeyVO();
+        userDevKeyVO.setAccessKey(accessKey);
+        userDevKeyVO.setSecretKey(secretKey);
+        return userDevKeyVO;
     }
 }

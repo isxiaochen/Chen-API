@@ -1,12 +1,12 @@
 package com.yupi.springbootinit.controller;
 
-import cn.hutool.http.HttpResponse;
 import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.czq.apiclientsdk.client.HeartApiClient;
 import com.czq.apicommon.common.JwtUtils;
 import com.czq.apicommon.entity.InterfaceCharging;
+import com.czq.apicommon.entity.InterfaceInfo;
+import com.czq.apicommon.entity.User;
 import com.czq.apicommon.entity.UserInterfaceInfo;
 import com.google.gson.Gson;
 import com.yupi.springbootinit.annotation.AuthCheck;
@@ -17,23 +17,24 @@ import com.yupi.springbootinit.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.yupi.springbootinit.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.yupi.springbootinit.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.yupi.springbootinit.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
-import com.czq.apicommon.entity.InterfaceInfo;
-import com.czq.apicommon.entity.User;
 import com.yupi.springbootinit.model.enums.InterfaceInfoStateEnum;
+import com.yupi.springbootinit.model.vo.InterfaceInfoVo;
 import com.yupi.springbootinit.service.InterfaceChargingService;
 import com.yupi.springbootinit.service.InterfaceInfoService;
 import com.yupi.springbootinit.service.UserInterfaceInfoService;
 import com.yupi.springbootinit.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import com.yupi.springbootinit.model.vo.InterfaceInfoVo;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -54,8 +55,6 @@ public class InterfaceInfoController {
     @Resource
     private UserInterfaceInfoService userInterfaceInfoService;
 
-    @Resource
-    private HeartApiClient heartApiClient;
 
     @Resource
     private InterfaceChargingService interfaceChargingService;
@@ -257,33 +256,27 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         long id = idRequest.getId();
-        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
-        if (oldInterfaceInfo == null) {
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
 
-        String method = oldInterfaceInfo.getMethod();
-        String requestHeader = oldInterfaceInfo.getRequestHeader();
-        String requestParams= null;
-        if (StringUtils.isNotBlank(requestHeader) && requestHeader.contains("application/json")){
-            method = RESTFUL_INTERFACE;
-            requestParams = oldInterfaceInfo.getRequestParams();
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+
+        Object res = invokeInterfaceInfo(interfaceInfo.getSdk(), interfaceInfo.getName(), interfaceInfo.getRequestParams(), accessKey, secretKey);
+        if (res == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if (res.toString().contains("Error request")) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统接口内部异常");
         }
 
-        //todo 发布接口只有请求id，缺乏接口参数，数据库添加一个案例接口参数，更好的演示
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap = gson.fromJson(requestParams, paramsMap.getClass());
-        HttpResponse httpResponse = heartApiClient.handleRequest(oldInterfaceInfo.getUrl(),method,paramsMap, requestParams);
-
-
-        if (!httpResponse.isOk()){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
-        }
-
-        InterfaceInfo interfaceInfo = new InterfaceInfo();
-        interfaceInfo.setId(id);
-        interfaceInfo.setStatus(InterfaceInfoStateEnum.online.getValue());
-        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        InterfaceInfo updateInterfaceInfo = new InterfaceInfo();
+        updateInterfaceInfo.setId(id);
+        updateInterfaceInfo.setStatus(InterfaceInfoStateEnum.online.getValue());
+        boolean result = interfaceInfoService.updateById(updateInterfaceInfo);
         return ResultUtils.success(result);
     }
 
@@ -324,14 +317,12 @@ public class InterfaceInfoController {
     public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest,
                                                       HttpServletRequest request) {
         //1.判断接口是否存在
-        //2.用户调用次数校验
-        //3.发起接口调用
         if (interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         long id = interfaceInfoInvokeRequest.getId();
-        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
-        if (oldInterfaceInfo == null) {
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
 
@@ -339,7 +330,7 @@ public class InterfaceInfoController {
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
 
-        // 用户调用次数校验
+        //2.用户调用次数校验
         QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper = new QueryWrapper<>();
         userInterfaceInfoQueryWrapper.eq("userId", loginUser.getId());
         userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
@@ -349,31 +340,73 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");
         }
 
-
+        //3.发起接口调用
         String requestParams= interfaceInfoInvokeRequest.getUserRequestParams();
-        String method = oldInterfaceInfo.getMethod();
-        String requestHeader = oldInterfaceInfo.getRequestHeader();
-
-        if (StringUtils.isNotBlank(requestHeader) && requestHeader.contains("application/json")){
-            method = RESTFUL_INTERFACE;
+        Object res = invokeInterfaceInfo(interfaceInfo.getSdk(), interfaceInfo.getName(), requestParams, accessKey, secretKey);
+        if (res == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        HeartApiClient tempClient = new HeartApiClient(accessKey,secretKey);
-        String url = oldInterfaceInfo.getUrl();
-        String realURL = url.replace("http://localhost:8123", GATEWAY_HOST);
-
-
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap = gson.fromJson(requestParams, paramsMap.getClass());
-
-        HttpResponse httpResponse = tempClient.handleRequest(realURL, method,paramsMap,requestParams);
-        if (!httpResponse.isOk()){
-            log.error("error:{}",httpResponse.body());
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"接口调用失败");
+        if (res.toString().contains("Error request")) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用错误，请检查参数和接口调用次数！");
         }
-
-        return ResultUtils.success(httpResponse.body());
+        return ResultUtils.success(res);
     }
 
+    private Object invokeInterfaceInfo(String classPath, String methodName, String userRequestParams,
+                                       String accessKey, String secretKey) {
+        try {
+            Class<?> clientClazz = Class.forName(classPath);
+            // 1. 获取构造器，参数为ak,sk
+            Constructor<?> binApiClientConstructor = clientClazz.getConstructor(String.class, String.class);
+            // 2. 构造出客户端
+            Object apiClient =  binApiClientConstructor.newInstance(accessKey, secretKey);
 
+            // 3. 找到要调用的方法
+            Method[] methods = clientClazz.getMethods();
+            for (Method method : methods) {
+                if (method.getName().equals(methodName)) {
+                    // 3.1 获取参数类型列表
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    if (parameterTypes.length == 0) {
+                        // 如果没有参数，直接调用
+                        return method.invoke(apiClient);
+                    }
+                    Gson gson = new Gson();
+                    // 构造参数
+                    Object parameter = gson.fromJson(userRequestParams, parameterTypes[0]);
+                    return method.invoke(apiClient, parameter);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "调用方法出错！");
+        }
+    }
+
+    @GetMapping("/sdk")
+    public void getSdk(HttpServletResponse response) throws IOException {
+        // 获取要下载的文件
+        org.springframework.core.io.Resource resource = new ClassPathResource("api-client-sdk-0.0.1.jar");
+        File file = resource.getFile();
+
+        // 设置响应头
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+
+        // 将文件内容写入响应
+        try (InputStream in = new FileInputStream(file);
+             OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            out.flush();
+        } catch (IOException e) {
+            // 处理异常
+            e.printStackTrace();
+        }
+    }
 
 }

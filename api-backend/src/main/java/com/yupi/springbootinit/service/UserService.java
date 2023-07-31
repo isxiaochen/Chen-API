@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.czq.apicommon.entity.User;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
+import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -110,4 +111,19 @@ public interface UserService extends IService<User> {
      * @param phone
      */
     void sendCode(String phone);
+
+    /**
+     * 生成图像验证码
+     * @param request
+     * @param response
+     */
+    void getCaptcha(HttpServletRequest request, HttpServletResponse response);
+
+
+    /**
+     * 重新生成ak，sk
+     * @param request
+     * @return
+     */
+    UserDevKeyVO genkey(HttpServletRequest request);
 }

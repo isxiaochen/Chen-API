@@ -14,6 +14,8 @@
             <result property="requestHeader" column="requestHeader" jdbcType="VARCHAR"/>
             <result property="responseHeader" column="responseHeader" jdbcType="VARCHAR"/>
             <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="parameterExample" column="parameterExample" jdbcType="VARCHAR"/>
+            <result property="sdk" column="sdk" jdbcType="VARCHAR"/>
             <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
@@ -23,7 +25,7 @@
     <sql id="Base_Column_List">
         id,name,description,
         url,method,requestParams,requestHeader,
-        responseHeader,status,isDelete,
+        responseHeader,status,parameterExample,sdk,isDelete,
         createTime,updateTime,userId
     </sql>
 </mapper>
