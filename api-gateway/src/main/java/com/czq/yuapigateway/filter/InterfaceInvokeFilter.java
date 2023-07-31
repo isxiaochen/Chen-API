@@ -128,6 +128,7 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
 
 
         if (interFaceInfo == null){
+            log.error("接口不存在！！！！");
             return handleNoAuth(response);
         }
 

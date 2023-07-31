@@ -49,6 +49,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
 
         //限流过滤
         if (!rateLimiter.tryAcquire()) {
+            log.error("请求太频繁了，被限流了!!!");
             throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS);
         }
 
