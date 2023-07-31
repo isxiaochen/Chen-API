@@ -1,6 +1,6 @@
 package com.czq.apiclientsdk;
 
-import com.czq.apiclientsdk.client.HeartApiClient;
+import com.czq.apiclientsdk.client.NameApiClient;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ public class HeartApiClientAutoConfiguration {
 
 
     @Bean
-    public HeartApiClient czqClient(){
-        return new HeartApiClient(accessKey,secretKey);
+    public NameApiClient czqClient(){
+        return new NameApiClient(accessKey,secretKey);
     }
 }
