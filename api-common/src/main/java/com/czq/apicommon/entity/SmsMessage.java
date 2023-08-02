@@ -5,23 +5,28 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 手机短信消息对象
+ * 邮箱 && 手机短信消息对象
  */
 @Data
 public class SmsMessage implements Serializable {
 
+//    /**
+//     * 手机号码
+//     */
+//    private String phone;
+
     /**
-     * 手机号码
+     * 邮箱
      */
-    private String phone;
+    private String email;
 
     /**
      * 短信
      */
     private String code;
 
-    public SmsMessage(String phone, String code) {
-        this.phone = phone;
+    public SmsMessage(String email, String code) {
+        this.email = email;
         this.code = code;
     }
 

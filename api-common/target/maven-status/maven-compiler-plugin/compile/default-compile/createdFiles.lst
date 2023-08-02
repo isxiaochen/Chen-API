@@ -10,6 +10,7 @@ com\czq\apicommon\vo\OrderVO.class
 com\czq\apicommon\entity\Order.class
 com\czq\apicommon\constant\RabbitmqConstant.class
 com\czq\apicommon\exception\BusinessException.class
+com\czq\apicommon\service\InnerOrderService.class
 com\czq\apicommon\common\PageRequest.class
 com\czq\apicommon\entity\InterfaceInfo.class
 com\czq\apicommon\common\BaseResponse.class

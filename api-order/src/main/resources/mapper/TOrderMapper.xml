@@ -23,4 +23,10 @@
         `count`,totalAmount,status,
         isDelete,createTime,updateTime
     </sql>
+    <select id="listTopBuyInterfaceInfo" resultType="com.czq.apicommon.entity.Order">
+        select interfaceId , SUM(`count`) as `count` from t_order
+        GROUP BY interfaceId
+        ORDER BY `count` desc
+        limit #{limit}
+    </select>
 </mapper>

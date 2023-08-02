@@ -162,6 +162,11 @@ public class InterfaceInfoController {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        Long userId = JwtUtils.getUserIdByToken(request);
+        if (userId == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
         InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
         InterfaceCharging interfaceCharging = interfaceChargingService.getOne(new QueryWrapper<InterfaceCharging>().eq("interfaceId", id));
         InterfaceInfoVo interfaceInfoVO = new InterfaceInfoVo();
@@ -169,21 +174,19 @@ public class InterfaceInfoController {
         if (interfaceCharging != null) {
             //获取付费剩余调用次数
             interfaceInfoVO.setCharging(interfaceCharging.getCharging());
-            interfaceInfoVO.setAvailablePieces(interfaceCharging.getAvailablePieces());
+//            interfaceInfoVO.setAvailablePieces(interfaceCharging.getAvailablePieces());
             interfaceInfoVO.setChargingId(interfaceCharging.getId());
-        }else {
-            //获取免费剩余调用次数
-            QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper = new QueryWrapper<>();
-            Long userId = JwtUtils.getUserIdByToken(request);
-            userInterfaceInfoQueryWrapper.eq("userId",userId);
-            userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
-            UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
-            if (userInterfaceInfo!=null){
-                interfaceInfoVO.setAvailablePieces(userInterfaceInfo.getLeftNum().toString());
-            }
         }
-        return ResultUtils.success(interfaceInfoVO);
+        //获取免费剩余调用次数
+        QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper = new QueryWrapper<>();
+        userInterfaceInfoQueryWrapper.eq("userId",userId);
+        userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
+        if (userInterfaceInfo!=null){
+            interfaceInfoVO.setAvailablePieces(userInterfaceInfo.getLeftNum().toString());
+        }
 
+        return ResultUtils.success(interfaceInfoVO);
     }
 
     /**
@@ -335,6 +338,9 @@ public class InterfaceInfoController {
         userInterfaceInfoQueryWrapper.eq("userId", loginUser.getId());
         userInterfaceInfoQueryWrapper.eq("interfaceInfoId", id);
         UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(userInterfaceInfoQueryWrapper);
+        if (userInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");
+        }
         int leftNum = userInterfaceInfo.getLeftNum();
         if(leftNum <= 0){
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用次数不足！");

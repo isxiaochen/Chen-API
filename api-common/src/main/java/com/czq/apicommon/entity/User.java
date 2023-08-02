@@ -46,6 +46,11 @@ public class User implements Serializable {
     private String phone;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 开放平台id
      */
     private String unionId;

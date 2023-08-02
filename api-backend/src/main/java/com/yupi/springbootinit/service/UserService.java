@@ -23,10 +23,9 @@ public interface UserService extends IService<User> {
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
-     * @param phone
      * @return 新用户 id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword,String phone);
+    long userRegister(String userAccount, String userPassword, String checkPassword);
 
     /**
      * 用户登录
@@ -126,4 +125,22 @@ public interface UserService extends IService<User> {
      * @return
      */
     UserDevKeyVO genkey(HttpServletRequest request);
+
+    /**
+     * 使用邮箱登录(后续会改造成使用手机号登录)
+     * @param emailNum
+     * @param emailCode
+     * @param request
+     * @param response
+     * @return
+     */
+    LoginUserVO userLoginBySms(String emailNum, String emailCode, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 使用邮箱注册(后续会改造成使用手机号注册)
+     * @param emailNum
+     * @param emailCaptcha
+     * @return
+     */
+    long userEmailRegister(String emailNum, String emailCaptcha);
 }

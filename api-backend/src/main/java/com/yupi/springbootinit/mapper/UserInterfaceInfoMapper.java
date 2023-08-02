@@ -14,6 +14,8 @@ public interface UserInterfaceInfoMapper extends BaseMapper<UserInterfaceInfo> {
 
 
     List<UserInterfaceInfoAnalysisVo> listTopInterfaceInfo(@Param("size") int size);
+
+    List<UserInterfaceInfo> listTopInvokeInterfaceInfo(int limit);
 }
 
 

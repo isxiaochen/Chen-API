@@ -32,11 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 用户接口
@@ -66,13 +62,35 @@ public class UserController {
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        String phone = userRegisterRequest.getPhone();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword,phone)) {
-            log.error("请求参数为空!!!!");
-            return null;
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+            log.error("账号或密码不能为空!!!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号或密码不能为空!!!");
         }
 
-        long result = userService.userRegister(userAccount, userPassword,checkPassword,phone);
+        long result = userService.userRegister(userAccount, userPassword,checkPassword);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 用户注册
+     *
+     * @param userRegisterRequest
+     * @return
+     */
+    @PostMapping("/email/register")
+    public BaseResponse<Long> userEmailRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+
+        if (userRegisterRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String emailCaptcha = userRegisterRequest.getEmailCaptcha();
+        String emailNum = userRegisterRequest.getEmailNum();
+        if (StringUtils.isAnyBlank(emailNum,emailCaptcha)) {
+            log.error("邮箱或邮箱验证码不能为空！！！");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"邮箱或邮箱验证码不能为空！！！");
+        }
+
+        long result = userService.userEmailRegister(emailNum,emailCaptcha);
         return ResultUtils.success(result);
     }
 
@@ -96,6 +114,28 @@ public class UserController {
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request,response);
         return ResultUtils.success(loginUserVO);
     }
+
+//    /**
+//     * 用户登录
+//     *
+//     * @param userLoginRequest
+//     * @param request
+//     * @return
+//     */
+//    @PostMapping("/loginBySms")
+//    public BaseResponse<User> userLoginBySms(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request, HttpServletResponse response) {
+//        if (userLoginRequest == null) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        String phoneNum = userLoginRequest.getPhoneNum();
+//        String phoneCaptcha = userLoginRequest.getPhoneCaptcha();
+//        if (StringUtils.isAnyBlank(phoneNum, phoneCaptcha)) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        User user = userService.userLoginBySms(phoneNum, phoneCaptcha, request, response);
+//        return ResultUtils.success(user);
+//    }
+
 
 
 
@@ -313,19 +353,41 @@ public class UserController {
         return ResultUtils.success(true);
     }
 
-    @PostMapping("/sms")
-    public BaseResponse<Boolean> sendCode(String phone){
-        if (StringUtils.isBlank(phone)){
+    /**
+     * 发送邮箱验证码(备案后会改为发送手机短信验证码)
+     * @param emailNum
+     * @return
+     */
+    @GetMapping("/smsCaptcha")
+    public BaseResponse<Boolean> sendCode(@RequestParam String emailNum){
+        if (StringUtils.isBlank(emailNum)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //^1[3-9]\d{9}$ 手机号正则表达式
+        //^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$    邮箱正则表达式
+        if (!Pattern.matches("[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$", emailNum)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"邮箱格式错误!");
+        }
+
+        userService.sendCode(emailNum);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/loginBySms")
+    public BaseResponse<LoginUserVO> userLoginBySms(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request, HttpServletResponse response) {
+        if (userLoginRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String emailNum = userLoginRequest.getEmailNum();
+        String emailCode = userLoginRequest.getEmailCaptcha();
+        if (StringUtils.isAnyBlank(emailNum, emailCode)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        if (!Pattern.matches("^1[3-9]\\d{9}$", phone)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"手机号格式错误!");
-        }
-
-        userService.sendCode(phone);
-        return ResultUtils.success(true);
+        LoginUserVO user = userService.userLoginBySms(emailNum, emailCode, request, response);
+        return ResultUtils.success(user);
     }
+
 
     @GetMapping("/key")
     public BaseResponse<UserDevKeyVO> getKey(HttpServletRequest request) {

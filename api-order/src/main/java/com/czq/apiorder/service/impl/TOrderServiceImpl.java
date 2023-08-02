@@ -63,6 +63,9 @@ public class TOrderServiceImpl extends ServiceImpl<TOrderMapper, Order>
     @Resource
     private Gson gson;
 
+    @Resource
+    private TOrderMapper orderMapper;
+
 
     public static final String USER_LOGIN_STATE = "user:login:";
 
@@ -197,6 +200,11 @@ public class TOrderServiceImpl extends ServiceImpl<TOrderMapper, Order>
         return orderVOPage;
 
 
+    }
+
+    @Override
+    public List<Order> listTopBuyInterfaceInfo(int limit) {
+        return orderMapper.listTopBuyInterfaceInfo(limit);
     }
 
     /**

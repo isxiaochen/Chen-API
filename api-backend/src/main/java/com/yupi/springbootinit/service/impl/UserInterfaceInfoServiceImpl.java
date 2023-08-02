@@ -11,6 +11,7 @@ import com.yupi.springbootinit.constant.UserConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.czq.apicommon.entity.UserInterfaceInfo;
 import com.yupi.springbootinit.model.dto.userinterface.UpdateUserInterfaceInfoDTO;
+import com.yupi.springbootinit.model.vo.InterfaceInfoVo;
 import com.yupi.springbootinit.model.vo.UserInterfaceInfoVO;
 import com.yupi.springbootinit.service.InterfaceInfoService;
 import com.yupi.springbootinit.service.UserInterfaceInfoService;
@@ -19,6 +20,7 @@ import com.yupi.springbootinit.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -151,6 +153,7 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         if(!loginUser.getId().equals(userId) && !loginUser.getUserRole().equals(UserConstant.ADMIN_ROLE)){
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
+
         // 获取用户可调用接口列表
         QueryWrapper<UserInterfaceInfo> userInterfaceInfoQueryWrapper= new QueryWrapper<>();
         userInterfaceInfoQueryWrapper.eq("userId",loginUser.getId());
@@ -177,6 +180,28 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
             return userInterfaceInfoVO;
         }).collect(Collectors.toList());
         return userInterfaceInfoVOList;
+    }
+
+    @Override
+    public List<InterfaceInfoVo> interfaceInvokeTopAnalysis(int limit) {
+        List<UserInterfaceInfo> userInterfaceInfoList = userInterfaceInfoMapper.listTopInvokeInterfaceInfo(limit);
+        Map<Long, List<UserInterfaceInfo>> interfaceInfoIdObjMap = userInterfaceInfoList.stream()
+                .collect(Collectors.groupingBy(UserInterfaceInfo::getInterfaceInfoId));
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", interfaceInfoIdObjMap.keySet());
+        List<InterfaceInfo> list = interfaceInfoService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+
+        List<InterfaceInfoVo> interfaceInfoVOList = list.stream().map(interfaceInfo -> {
+            InterfaceInfoVo interfaceInfoVO = new InterfaceInfoVo();
+            BeanUtils.copyProperties(interfaceInfo, interfaceInfoVO);
+            int totalNum = interfaceInfoIdObjMap.get(interfaceInfo.getId()).get(0).getTotalNum();
+            interfaceInfoVO.setTotalNum(totalNum);
+            return interfaceInfoVO;
+        }).collect(Collectors.toList());
+        return interfaceInfoVOList;
     }
 }
 
