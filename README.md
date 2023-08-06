@@ -7,6 +7,8 @@
 > 
 >
 > 在线体验地址：[Chen API](http://www.chen-code.work/)
+>
+> 项目前端开源地址：[https://github.com/isxiaochen/Chen-API-frontend/tree/master](https://github.com/isxiaochen/Chen-API-frontend/tree/master)
 
 
 
