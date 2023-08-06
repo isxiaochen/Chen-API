@@ -8,6 +8,10 @@ public interface RabbitmqConstant {
     String EXCHANGE_SMS_INFORM ="exchange_sms_inform";
     String ROUTINGKEY_SMS ="inform.login.sms";
 
+    /*接口数据一致性相关*/
+    String QUEUE_INTERFACE_CONSISTENT = "queue_interface_consistent";
+    String EXCHANGE_INTERFACE_CONSISTENT = "exchange_interface_consistent";
+    String ROUTING_KEY_INTERFACE_CONSISTENT = "routing_key_interface_consistent";
 
     /* 订单相关 */
     String ORDER_EXCHANGE_NAME = "order.exchange";

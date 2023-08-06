@@ -28,6 +28,14 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
 
 
     /**
+     * 回滚接口调用次数
+     * @param userId
+     * @param interfaceInfoId
+     * @return
+     */
+    boolean recoverInvokeCount(long userId, long interfaceInfoId);
+
+    /**
      * 获取接口的剩余调用次数
      * @param userId
      * @param interfaceInfoId

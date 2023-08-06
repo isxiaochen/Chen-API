@@ -35,7 +35,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
 
 
     public static final List<String> NOT_LOGIN_PATH = Arrays.asList(
-            "/api/user/login", "/api/user/loginBySms", "/api/user/register", "/api/user/smsCaptcha",
+            "/api/user/login", "/api/user/loginBySms", "/api/user/register","/api/user/email/register", "/api/user/smsCaptcha",
             "/api/user/getCaptcha", "/api/interface/**","/api/third/alipay/**","/api/interfaceInfo/sdk");
 
 

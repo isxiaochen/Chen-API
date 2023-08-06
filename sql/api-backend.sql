@@ -14,7 +14,8 @@
  Date: 02/08/2023 19:43:03
 */
 
-SET NAMES utf8mb4;
+use api_backend;
+SET NAMES utf8;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
@@ -22,16 +23,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `interface_charging`;
 CREATE TABLE `interface_charging`  (
-  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `interfaceId` bigint(0) NOT NULL COMMENT '接口id',
-  `charging` float(255, 2) NOT NULL COMMENT '计费规则（元/条）',
-  `availablePieces` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '接口剩余可调用次数',
-  `userId` bigint(0) NOT NULL COMMENT '创建人',
-  `createTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `updateTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
-  `isDelete` tinyint(0) NOT NULL DEFAULT 1 COMMENT '是否删除(0-删除 1-正常)',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                                       `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                       `interfaceId` bigint(0) NOT NULL COMMENT '接口id',
+                                       `charging` float(255, 2) NOT NULL COMMENT '计费规则（元/条）',
+                                       `availablePieces` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '接口剩余可调用次数',
+                                       `userId` bigint(0) NOT NULL COMMENT '创建人',
+                                       `createTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+                                       `updateTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+                                       `isDelete` tinyint(0) NOT NULL DEFAULT 1 COMMENT '是否删除(0-删除 1-正常)',
+                                       PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of interface_charging
@@ -43,23 +44,23 @@ INSERT INTO `interface_charging` VALUES (1, 3, 0.52, '977', 1, '2023-07-24 14:33
 -- ----------------------------
 DROP TABLE IF EXISTS `interface_info`;
 CREATE TABLE `interface_info`  (
-  `id` bigint(0) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '接口名称',
-  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '接口描述',
-  `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '接口地址',
-  `method` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '请求类型',
-  `requestHeader` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求头',
-  `responseHeader` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '响应头',
-  `status` tinyint(0) NULL DEFAULT 1 COMMENT '接口状态 0 关闭，1启用',
-  `isDelete` int(0) NULL DEFAULT 1 COMMENT '逻辑删除 0 删除，1正常',
-  `createTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
-  `updateTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
-  `userId` bigint(0) NULL DEFAULT NULL,
-  `requestParams` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求参数',
-  `sdk` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '接口对应的SDK类路径',
-  `parameterExample` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '参数示例',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+                                   `id` bigint(0) NOT NULL AUTO_INCREMENT,
+                                   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接口名称',
+                                   `description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接口描述',
+                                   `url` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '接口地址',
+                                   `method` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '请求类型',
+                                   `requestHeader` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '请求头',
+                                   `responseHeader` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '响应头',
+                                   `status` tinyint(0) NULL DEFAULT 1 COMMENT '接口状态 0 关闭，1启用',
+                                   `isDelete` int(0) NULL DEFAULT 1 COMMENT '逻辑删除 0 删除，1正常',
+                                   `createTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+                                   `updateTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+                                   `userId` bigint(0) NULL DEFAULT NULL,
+                                   `requestParams` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '请求参数',
+                                   `sdk` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接口对应的SDK类路径',
+                                   `parameterExample` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '参数示例',
+                                   PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of interface_info
@@ -74,24 +75,24 @@ INSERT INTO `interface_info` VALUES (6, 'getDayWallpaperUrl', '每日壁纸URL',
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user`  (
-  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `userAccount` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '账号',
-  `userPassword` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '密码',
-  `unionId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '微信开放平台id',
-  `mpOpenId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '公众号openId',
-  `userName` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '用户昵称',
-  `userAvatar` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '用户头像',
-  `userProfile` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '用户简介',
-  `userRole` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user' COMMENT '用户角色：user/admin/ban',
-  `createTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `updateTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
-  `isDelete` tinyint(0) NOT NULL DEFAULT 1 COMMENT '是否删除',
-  `accessKey` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ak',
-  `secretKey` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'sk',
-  `phone` char(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '手机号码',
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT 'QQ邮箱',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1677647739169431556 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户' ROW_FORMAT = Dynamic;
+                         `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT 'id',
+                         `userAccount` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '账号',
+                         `userPassword` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '密码',
+                         `unionId` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '微信开放平台id',
+                         `mpOpenId` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '公众号openId',
+                         `userName` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户昵称',
+                         `userAvatar` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户头像',
+                         `userProfile` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户简介',
+                         `userRole` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'user' COMMENT '用户角色：user/admin/ban',
+                         `createTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+                         `updateTime` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+                         `isDelete` tinyint(0) NOT NULL DEFAULT 1 COMMENT '是否删除',
+                         `accessKey` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'ak',
+                         `secretKey` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'sk',
+                         `phone` char(11) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '手机号码',
+                         `email` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'QQ邮箱',
+                         PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1677647739169431556 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
@@ -105,18 +106,18 @@ INSERT INTO `user` VALUES (1677647739169431556, 'test', '37c639816ab8a12a4e9d8d6
 -- ----------------------------
 DROP TABLE IF EXISTS `user_interface_info`;
 CREATE TABLE `user_interface_info`  (
-  `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `userId` bigint(0) NULL DEFAULT NULL COMMENT '用户id',
-  `interfaceInfoId` bigint(0) NULL DEFAULT NULL COMMENT '调用接口id',
-  `totalNum` int(0) NULL DEFAULT 0 COMMENT '接口的总调用次数',
-  `leftNum` int(0) NULL DEFAULT NULL COMMENT '接口剩余调用次数',
-  `isDelete` int(0) NULL DEFAULT 1 COMMENT '逻辑删除 0 删除 1 正常',
-  `status` int(0) NULL DEFAULT 1 COMMENT '0 禁止调用 1 允许调用',
-  `createTime` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `updateTime` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
-  `version` int(0) NULL DEFAULT 0 COMMENT '乐观锁版本号',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+                                        `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `userId` bigint(0) NULL DEFAULT NULL COMMENT '用户id',
+                                        `interfaceInfoId` bigint(0) NULL DEFAULT NULL COMMENT '调用接口id',
+                                        `totalNum` int(0) NULL DEFAULT 0 COMMENT '接口的总调用次数',
+                                        `leftNum` int(0) NULL DEFAULT NULL COMMENT '接口剩余调用次数',
+                                        `isDelete` int(0) NULL DEFAULT 1 COMMENT '逻辑删除 0 删除 1 正常',
+                                        `status` int(0) NULL DEFAULT 1 COMMENT '0 禁止调用 1 允许调用',
+                                        `createTime` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+                                        `updateTime` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+                                        `version` int(0) NULL DEFAULT 0 COMMENT '乐观锁版本号',
+                                        PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user_interface_info
@@ -128,5 +129,3 @@ INSERT INTO `user_interface_info` VALUES (9, 1, 5, 1, 98, 1, 1, '2023-08-02 17:1
 INSERT INTO `user_interface_info` VALUES (10, 1, 6, 0, 99, 1, 1, '2023-08-02 17:10:20', '2023-08-02 17:10:20', 1);
 INSERT INTO `user_interface_info` VALUES (11, 2, 4, 0, 99, 1, 1, '2023-08-02 17:10:20', '2023-08-02 17:10:20', 1);
 INSERT INTO `user_interface_info` VALUES (12, 2, 5, 0, 98, 1, 1, '2023-08-02 17:10:22', '2023-08-02 17:10:22', 2);
-
-SET FOREIGN_KEY_CHECKS = 1;

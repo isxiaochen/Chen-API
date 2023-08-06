@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.czq.apicommon.entity.User;
+import com.yupi.springbootinit.model.dto.user.UserUpdateRequest;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -106,10 +109,11 @@ public interface UserService extends IService<User> {
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
     /**
-     * 发送手机验证码
-     * @param phone
+     * 发送邮箱/手机验证码
+     * @param emailNum
+     * @param captchaType
      */
-    void sendCode(String phone);
+    void sendCode(String emailNum,String captchaType);
 
     /**
      * 生成图像验证码
@@ -143,4 +147,20 @@ public interface UserService extends IService<User> {
      * @return
      */
     long userEmailRegister(String emailNum, String emailCaptcha);
+
+    /**
+     * 上传用户头像
+     * @param file
+     * @param request
+     * @return
+     */
+    boolean uploadFileAvatar(MultipartFile file, HttpServletRequest request);
+
+    /**
+     * 更新用户
+     * @param userUpdateRequest
+     * @param request
+     * @return
+     */
+    boolean updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 }

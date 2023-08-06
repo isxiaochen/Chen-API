@@ -4,10 +4,12 @@ import com.czq.apiclientsdk.utils.SignUtils;
 import com.czq.apicommon.entity.InterfaceInfo;
 import com.czq.apicommon.entity.User;
 import com.czq.apicommon.service.ApiBackendService;
+import com.czq.apicommon.vo.UserInterfaceInfoMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.jetbrains.annotations.NotNull;
 import org.reactivestreams.Publisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.Ordered;
@@ -29,6 +31,9 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import static com.czq.apicommon.constant.RabbitmqConstant.EXCHANGE_INTERFACE_CONSISTENT;
+import static com.czq.apicommon.constant.RabbitmqConstant.ROUTING_KEY_INTERFACE_CONSISTENT;
+
 @Component
 @Slf4j
 public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
@@ -41,6 +46,8 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
 
 
@@ -134,19 +141,21 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
 
 
 
-        //5.判断接口是否还有调用次数，如果没有则直接拒绝
-        int leftInvokeCount=-1;
+        //5.判断接口是否还有调用次数，并且统计接口调用，将二者转化成原子性操作(backend本地服务的本地事务实现)，解决二者数据一致性问题
+        boolean result=false;
         try {
-            leftInvokeCount = apiBackendService.getLeftInvokeCount(invokeUser.getId(), interFaceInfo.getId());
+           result = apiBackendService.invokeCount(invokeUser.getId(), interFaceInfo.getId());
         } catch (Exception e) {
-            log.info("远程调用获取被调用接口剩余次数失败");
+            log.error("统计接口出现问题或者用户恶意调用不存在的接口");
             e.printStackTrace();
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            return response.setComplete();
         }
 
-        if (leftInvokeCount<=0){
+        if (!result){
+            log.error("接口剩余次数不足");
             return handleNoAuth(response);
         }
-
 
         //6.发起接口调用，网关路由实现
         Mono<Void> filter = chain.filter(exchange);
@@ -194,26 +203,11 @@ public class InterfaceInvokeFilter implements GatewayFilter, Ordered {
                                 //responseBody
                                 String responseBody= new String(content, StandardCharsets.UTF_8);
 
-                                //8.接口调用成功后，调用次数+1 远程调用实现 or 消息队列实现
-                                if (originalResponse.getStatusCode() == HttpStatus.OK){
-                                    log.info("接口调用正常-响应体:" + responseBody);
-
-
-                                    //捕获技术异常
-                                    boolean result = false;
-                                    try {
-                                        result = apiBackendService.invokeCount(userId, interfaceInfoId);
-                                    } catch (Exception e) {
-                                        log.error("远程调用统计统计接口失败");
-                                        e.printStackTrace();
-                                    }
-
-                                    //捕获业务异常
-                                    if (!result){
-                                        return bufferFactory.wrap("网络繁忙，请重试!!!".getBytes());
-                                    }
-                                }else {
-                                    log.error("接口调用异常-响应体"+responseBody);
+                                //8.接口调用失败，利用消息队列实现接口统计数据的回滚；因为消息队列的可靠性所以我们选择消息队列而不是远程调用来实现
+                                if (!(originalResponse.getStatusCode() == HttpStatus.OK)){
+                                    log.error("接口异常调用-响应体:" + responseBody);
+                                    UserInterfaceInfoMessage vo = new UserInterfaceInfoMessage(userId,interfaceInfoId);
+                                    rabbitTemplate.convertAndSend(EXCHANGE_INTERFACE_CONSISTENT, ROUTING_KEY_INTERFACE_CONSISTENT,vo);
                                 }
 
                                 return bufferFactory.wrap(content);

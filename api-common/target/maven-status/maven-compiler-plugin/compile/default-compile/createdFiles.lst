@@ -1,5 +1,6 @@
 com\czq\apicommon\common\JwtUtils.class
 com\czq\apicommon\entity\UserInterfaceInfo.class
+com\czq\apicommon\vo\UserInterfaceInfoMessage.class
 com\czq\apicommon\common\ResultUtils.class
 com\czq\apicommon\common\IdRequest.class
 com\czq\apicommon\service\InnerUserService.class

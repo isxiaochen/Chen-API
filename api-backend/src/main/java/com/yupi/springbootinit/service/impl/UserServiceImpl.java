@@ -5,7 +5,8 @@ import static com.czq.apicommon.constant.RabbitmqConstant.EXCHANGE_SMS_INFORM;
 import static com.czq.apicommon.constant.RabbitmqConstant.ROUTINGKEY_SMS;
 import static com.czq.apicommon.constant.RedisConstant.LOGINCODEPRE;
 import static com.yupi.springbootinit.constant.UserConstant.USER_LOGIN_STATE;
-import static com.yupi.springbootinit.utils.LeakyBucket.leakyBucket;
+import static com.yupi.springbootinit.utils.LeakyBucket.loginLeakyBucket;
+import static com.yupi.springbootinit.utils.LeakyBucket.registerLeakyBucket;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.LineCaptcha;
@@ -22,14 +23,18 @@ import com.google.gson.Gson;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.constant.CommonConstant;
 import com.yupi.springbootinit.exception.BusinessException;
+import com.yupi.springbootinit.exception.ThrowUtils;
 import com.yupi.springbootinit.mapper.UserMapper;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.czq.apicommon.entity.User;
+import com.yupi.springbootinit.model.dto.user.UserUpdateRequest;
 import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
+import com.yupi.springbootinit.utils.FileUploadUtil;
+import com.yupi.springbootinit.utils.LeakyBucket;
 import com.yupi.springbootinit.utils.SqlUtils;
 
 import java.io.IOException;
@@ -37,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -51,6 +55,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户服务实现
@@ -82,7 +87,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private Gson gson;
 
-    public static final String USER_LOGIN_Email_CODE="user:login:email:code:";
+    //登录和注册的标识，方便切换不同的令牌桶来限制验证码发送
+    private static final String LOGIN_SIGN = "login";
+
+    private static final String REGISTER_SIGN="register";
+
+    public static final String USER_LOGIN_EMAIL_CODE ="user:login:email:code:";
+    public static final String USER_REGISTER_EMAIL_CODE ="user:register:email:code:";
 
 
     @Override
@@ -91,10 +102,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
+        if (userPassword.length() < 3 || checkPassword.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
         }
         // 密码和校验密码相同
@@ -143,10 +154,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
         }
-        if (userPassword.length() < 8) {
+        if (userPassword.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
         // 2. 加密
@@ -285,15 +296,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
-    public void sendCode(String email) {
+    public void sendCode(String email, String captchaType) {
+
+
+        if (StringUtils.isBlank(captchaType)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"验证码类型为空!!!");
+        }
 
         //令牌桶算法实现短信接口的限流，因为手机号码重复发送短信，要进行流量控制
         //解决同一个手机号的并发问题，锁的粒度非常小，不影响性能。只是为了防止用户第一次发送短信时的恶意调用
         synchronized (email.intern()) {
-            Boolean exist = stringRedisTemplate.hasKey(USER_LOGIN_Email_CODE+email);
+            Boolean exist = stringRedisTemplate.hasKey(USER_LOGIN_EMAIL_CODE +email);
             if (exist!=null && exist) {
                 //1.令牌桶算法对手机短信接口进行限流 具体限流规则为同一个手机号，60s只能发送一次
-                long lastTime = Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(USER_LOGIN_Email_CODE + email)));
+                long lastTime=0L;
+                LeakyBucket leakyBucket = null;
+                if (captchaType.equals(REGISTER_SIGN)){
+                    String strLastTime = stringRedisTemplate.opsForValue().get(USER_REGISTER_EMAIL_CODE + email);
+                    if (strLastTime!=null){
+                        lastTime = Long.parseLong(strLastTime);
+                    }
+                    leakyBucket = registerLeakyBucket;
+                }else{
+                    String strLastTime = stringRedisTemplate.opsForValue().get(USER_LOGIN_EMAIL_CODE + email);
+                    if (strLastTime!=null){
+                        lastTime = Long.parseLong(strLastTime);
+                    }
+                    leakyBucket = loginLeakyBucket;
+                }
+
                 if (!leakyBucket.control(lastTime)) {
                     log.info("邮箱发送太频繁了");
                     throw new BusinessException(ErrorCode.PARAMS_ERROR,"邮箱送太频繁了");
@@ -310,7 +341,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             log.info("邮箱对象："+smsMessage.toString());
             //更新手机号发送短信的时间
-            stringRedisTemplate.opsForValue().set(USER_LOGIN_Email_CODE+email,""+System.currentTimeMillis()/1000);
+            if (captchaType.equals(REGISTER_SIGN)){
+                stringRedisTemplate.opsForValue().set(USER_REGISTER_EMAIL_CODE +email,""+System.currentTimeMillis()/1000);
+            }else {
+                stringRedisTemplate.opsForValue().set(USER_LOGIN_EMAIL_CODE +email,""+System.currentTimeMillis()/1000);
+            }
 
         }
 
@@ -420,6 +455,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
             return user.getId();
         }
+    }
+
+    @Override
+    public boolean uploadFileAvatar(MultipartFile file, HttpServletRequest request) {
+        User loginUser = this.getLoginUser(request);
+
+        //更新持久层用户头像信息
+        User updateUser = new User();
+        updateUser.setId(loginUser.getId());
+        String url = FileUploadUtil.uploadFileAvatar(file);
+        updateUser.setUserAvatar(url);
+        boolean result = this.updateById(updateUser);
+
+        //更新用户缓存
+        loginUser.setUserAvatar(url);
+        String userJson = gson.toJson(loginUser);
+        stringRedisTemplate.opsForValue().set(USER_LOGIN_STATE + loginUser.getId(), userJson, JwtUtils.EXPIRE, TimeUnit.MILLISECONDS);
+        return result;
+    }
+
+    @Override
+    public boolean updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+
+        //允许用户修改自己的信息，但拒绝用户修改别人的信息；但管理员可以修改别人的信息
+        User loginUser = this.getLoginUser(request);
+        Long id = userUpdateRequest.getId();
+        if (!loginUser.getId().equals(id)){
+            if (!loginUser.getUserRole().equals(UserRoleEnum.ADMIN.getValue())){
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+        }
+
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = this.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+
+        //修改完要更新用户缓存
+        loginUser.setUserName(userUpdateRequest.getUserName());
+        loginUser.setGender(userUpdateRequest.getGender());
+        String userJson = gson.toJson(loginUser);
+        stringRedisTemplate.opsForValue().set(USER_LOGIN_STATE + loginUser.getId(), userJson, JwtUtils.EXPIRE, TimeUnit.MILLISECONDS);
+
+        return true;
     }
 
     /**

@@ -73,6 +73,7 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
     public boolean invokeCount(long userId, long interfaceInfoId) {
 
         //校验用户id，接口id是否合理
+        //校验用户的接口剩余调用次数是否充足
         //接口总调用次数+1，剩余调用次数-1
         //考虑计数的并发安全问题如何解决
 
@@ -88,6 +89,12 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         Integer version = userInterfaceInfo.getVersion();
 
 
+        Integer leftNum = userInterfaceInfo.getLeftNum();
+        if (leftNum<=0){
+            log.error("接口剩余调用次数不足");
+            return false;
+        }
+
 
         UpdateWrapper<UserInterfaceInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("userId",userId);
@@ -97,6 +104,19 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         updateWrapper.setSql("totalNum = totalNum +1,leftNum = leftNum-1,version = version+1");
         return this.update(updateWrapper);
 
+    }
+
+    @Override
+    public boolean recoverInvokeCount(long userId, long interfaceInfoId) {
+        if (userId<0 || interfaceInfoId<0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户或接口不存在");
+        }
+        UpdateWrapper<UserInterfaceInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("userId",userId);
+        updateWrapper.eq("interfaceInfoId",interfaceInfoId);
+        updateWrapper.gt("leftNum",0);
+        updateWrapper.setSql("totalNum = totalNum -1,leftNum = leftNum+1,version = version+1");
+        return this.update(updateWrapper);
     }
 
     @Override

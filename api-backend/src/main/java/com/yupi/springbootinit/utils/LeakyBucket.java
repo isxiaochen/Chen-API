@@ -18,8 +18,12 @@ public class LeakyBucket {
     public long nowTokens;
 
 
-    //手机短信接口令牌桶对象，单例对象
-    public static LeakyBucket leakyBucket = new LeakyBucket(1,1);
+    //手机短信接口令牌桶对象，单例对象      登录令牌桶
+    public static LeakyBucket loginLeakyBucket = new LeakyBucket(1,1);
+    //注册令牌桶
+    public static LeakyBucket registerLeakyBucket = new LeakyBucket(1,1);
+
+
 
     public LeakyBucket(int tokenCapacity, int rate) {
         this.tokenCapacity = tokenCapacity;

@@ -17,6 +17,7 @@
         <result property="secretKey" column="secretKey" jdbcType="VARCHAR"/>
         <result property="phone" column="phone" jdbcType="CHAR"/>
         <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="gender" column="gender" jdbcType="INTEGER"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
@@ -25,6 +26,7 @@
     <sql id="Base_Column_List">
         id,unionId,mpOpenId,
         userName,userAvatar,userProfile,
-        userRole,accessKey,secretKey,phone,email,createTime,updateTime,isDelete
+        userRole,accessKey,secretKey,phone,email,gender,
+        createTime,updateTime,isDelete
     </sql>
 </mapper>

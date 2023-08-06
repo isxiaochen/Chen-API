@@ -14,9 +14,7 @@
  Date: 02/08/2023 19:43:50
 */
 
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
+create database api_order
 -- ----------------------------
 -- Table structure for t_order
 -- ----------------------------
@@ -31,10 +29,10 @@ CREATE TABLE `t_order`  (
   `isDelete` int(0) NOT NULL DEFAULT 1 COMMENT '0-删除 1 正常',
   `createTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
   `updateTime` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0),
-  `orderSn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单号',
+  `orderSn` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '订单号',
   `charging` float(255, 2) NOT NULL COMMENT '单价',
   PRIMARY KEY (`id`, `isDelete`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of t_order
@@ -50,5 +48,3 @@ INSERT INTO `t_order` VALUES (22, 2, 3, 5, 2.60, 1, 1, '2023-07-27 20:04:23', '2
 INSERT INTO `t_order` VALUES (23, 2, 3, 5, 2.60, 2, 1, '2023-07-29 22:48:10', '2023-07-30 16:28:34', '202307292248100371685925582', 0.52);
 INSERT INTO `t_order` VALUES (24, 2, 3, 5, 2.60, 2, 1, '2023-07-29 22:52:47', '2023-07-30 16:28:34', '202307292252478741685505202', 0.52);
 INSERT INTO `t_order` VALUES (25, 1677647739169431556, 3, 1, 0.52, 0, 1, '2023-08-02 19:31:39', '2023-08-02 19:31:39', '202308021931398741686669651677647739169431556', 0.52);
-
-SET FOREIGN_KEY_CHECKS = 1;

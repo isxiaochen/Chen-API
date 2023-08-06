@@ -3,6 +3,7 @@ package com.yupi.springbootinit.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.czq.apicommon.common.JwtUtils;
 import com.yupi.springbootinit.annotation.AuthCheck;
 import com.yupi.springbootinit.common.BaseResponse;
 import com.yupi.springbootinit.common.DeleteRequest;
@@ -18,21 +19,27 @@ import com.yupi.springbootinit.model.dto.user.UserRegisterRequest;
 import com.yupi.springbootinit.model.dto.user.UserUpdateMyRequest;
 import com.yupi.springbootinit.model.dto.user.UserUpdateRequest;
 import com.czq.apicommon.entity.User;
+import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserDevKeyVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.yupi.springbootinit.utils.FileUploadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import static com.yupi.springbootinit.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户接口
@@ -115,28 +122,6 @@ public class UserController {
         return ResultUtils.success(loginUserVO);
     }
 
-//    /**
-//     * 用户登录
-//     *
-//     * @param userLoginRequest
-//     * @param request
-//     * @return
-//     */
-//    @PostMapping("/loginBySms")
-//    public BaseResponse<User> userLoginBySms(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request, HttpServletResponse response) {
-//        if (userLoginRequest == null) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        String phoneNum = userLoginRequest.getPhoneNum();
-//        String phoneCaptcha = userLoginRequest.getPhoneCaptcha();
-//        if (StringUtils.isAnyBlank(phoneNum, phoneCaptcha)) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        User user = userService.userLoginBySms(phoneNum, phoneCaptcha, request, response);
-//        return ResultUtils.success(user);
-//    }
-
-
 
 
     /**
@@ -212,18 +197,35 @@ public class UserController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest,
             HttpServletRequest request) {
+
         if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
+        if (StringUtils.isBlank(userUpdateRequest.getUserName())){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户名不能为空");
+        }
+        boolean result  = userService.updateUser(userUpdateRequest,request);
+        return ResultUtils.success(result);
     }
+
+    /**
+     * 更新头像
+     *
+     * @param file
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/avatar")
+    public BaseResponse<Boolean> updateUserAvatar(@RequestParam(required = false) MultipartFile file, HttpServletRequest request) {
+        if (!FileUploadUtil.validate(file)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        boolean result = userService.uploadFileAvatar(file,request);
+        return ResultUtils.success(result);
+    }
+
 
     /**
      * 根据 id 获取用户（仅管理员）
@@ -359,7 +361,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/smsCaptcha")
-    public BaseResponse<Boolean> sendCode(@RequestParam String emailNum){
+    public BaseResponse<Boolean> sendCode(@RequestParam String emailNum,@RequestParam String captchaType){
         if (StringUtils.isBlank(emailNum)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -369,7 +371,7 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"邮箱格式错误!");
         }
 
-        userService.sendCode(emailNum);
+        userService.sendCode(emailNum,captchaType);
         return ResultUtils.success(true);
     }
 
@@ -397,7 +399,6 @@ public class UserController {
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", loginUser.getId());
-        queryWrapper.eq("userAccount", loginUser.getUserAccount());
         queryWrapper.select("accessKey", "secretKey");
         User user = userService.getOne(queryWrapper);
         if (user == null) {

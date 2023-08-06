@@ -386,7 +386,7 @@ public class InterfaceInfoController {
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "调用方法出错！");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "找不到调用的方法!! 请检查你的请求参数是否正确!");
         }
     }
 
@@ -394,24 +394,25 @@ public class InterfaceInfoController {
     public void getSdk(HttpServletResponse response) throws IOException {
         // 获取要下载的文件
         org.springframework.core.io.Resource resource = new ClassPathResource("api-client-sdk-0.0.1.jar");
-        File file = resource.getFile();
+        InputStream inputStream = resource.getInputStream();
 
         // 设置响应头
         response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+        response.setHeader("Content-Disposition", "attachment; filename=api-client-sdk-0.0.1.jar");
 
         // 将文件内容写入响应
-        try (InputStream in = new FileInputStream(file);
-             OutputStream out = response.getOutputStream()) {
+        try (OutputStream out = response.getOutputStream()) {
             byte[] buffer = new byte[4096];
             int length;
-            while ((length = in.read(buffer)) > 0) {
+            while ((length = inputStream.read(buffer)) > 0) {
                 out.write(buffer, 0, length);
             }
             out.flush();
         } catch (IOException e) {
             // 处理异常
             e.printStackTrace();
+        } finally {
+            inputStream.close();
         }
     }
 

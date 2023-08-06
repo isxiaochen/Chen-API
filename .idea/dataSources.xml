@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="panda_api@123.207.3.145" uuid="f5e7cb12-d24e-4f36-8fef-9a6f9c029644">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://123.207.3.145:3306/panda_api</jdbc-url>
+    </data-source>
+  </component>
+</project>
